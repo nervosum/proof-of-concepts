@@ -1,7 +1,8 @@
+import os
+import logging
+import pandas as pd
 from flask import Flask, request
 from model.model import load_most_recent_model
-import pandas as pd
-import logging
 
 
 logger = logging.getLogger(__name__)
@@ -31,5 +32,6 @@ def metadata():
 
 
 if __name__=="__main__":
-    model, schema, metadata = load_most_recent_model('../models')
+    model_path = os.path.join(os.path.dirname(__file__), '../models')
+    model, schema, metadata = load_most_recent_model(model_path)
     app.run(debug=True)

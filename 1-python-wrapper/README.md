@@ -2,14 +2,23 @@
 
 We take the iris data set and train a simple classification model for it.
 
-* Training code should go in `training`
-* A module with a `predict` function should be put into `model`
-* A flask interface and main app should be put in `wrapper`
+* Example training code is present in `training`
+* The model object with the `predict` function can be found in the `model` module
+* A flask interface and main app can be found in `wrapper`
 
 ## Expected format
 
-predict: { "f1": 0, "f2" :1, "f3": 2 } => { "class": "predicted_class" }
+predict: { "sepal_length": 0, "sepal_width" :1, "petal_length": 2, "petal_width": 3} => { "classification": "predicted_class" }
 
-## How to start
+## How to install and start the api
 
-* Document how to start the flask api here
+Install the package in your environment using:
+
+``` bash
+# Install package with all dependencies
+pip install -e . 
+# Start flask app.
+python wrapper/main.py
+```
+
+

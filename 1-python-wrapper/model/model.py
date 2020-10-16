@@ -27,7 +27,6 @@ def load_most_recent_model(model_dir: str) -> Tuple[Any, Any, Any]:
     """
 
     try:
-        print(Path(model_dir).absolute())
         version = max(os.listdir(model_dir))
         logger.info("Load model")
         model_dir = os.path.join(model_dir, version)
@@ -37,7 +36,7 @@ def load_most_recent_model(model_dir: str) -> Tuple[Any, Any, Any]:
             load_json(os.path.join(model_dir, 'schema.json')),
             load_json(os.path.join(model_dir, 'metadata.json')))
 
-    except ValueError as e:
+    except Exception as e:
         logger.info("Create model")
         train(model_dir=model_dir)
         return load_most_recent_model(model_dir)
@@ -54,5 +53,5 @@ def predict(data: pd.DataFrame) -> pd.DataFrame:
     """
     return pd.DataFrame(data={'prediction': model.predict(data)})
 
-logger.info("LOAD MODEL")
-model = load_most_recent_model('../models')
+model_path = os.path.join(os.path.dirname(__file__), '../models')
+model = load_most_recent_model(model_path)
