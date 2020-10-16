@@ -12,10 +12,6 @@ setup(
     author="Nervosum",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    install_requires=[
-        "pandas==1.1.3",
-        "scikit-learn>0.23",
-        "flask==1.1.2"
-    ],
+    install_requires=["pandas==1.1.3", "scikit-learn>0.23", "flask==1.1.2"],
     python_requires=">=3.7",
 )
