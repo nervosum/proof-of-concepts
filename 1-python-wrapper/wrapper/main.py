@@ -10,7 +10,6 @@ app = Flask(__name__)
 @app.route('/predict', methods=["GET", "POST"])
 def predict():
     if request.method == "POST":
-        print(schema)
         input = request.json
         data = pd.DataFrame(input, index=[0])
         return {"classification": str(model.predict(data)[0])}
