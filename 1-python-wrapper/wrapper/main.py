@@ -10,11 +10,14 @@ app = Flask(__name__)
 @app.route('/predict', methods=["GET", "POST"])
 def predict():
     if request.method == "POST":
-        input = request.json
-        data = pd.DataFrame(input, index=[0])
-        return {"classification": str(model.predict(data)[0])}
+        try:
+            input = request.json
+            data = pd.DataFrame(input, index=[0])
+            return {"classification": str(model.predict(data)[0])}
+        except Exception as err:
+            return {"error": err}
     else:
-        return "Please provide post request according to schema"
+        return f"Please provide post request according to the schema <br> {schema}"
 
 
 @app.route('/schema', methods=["GET"])

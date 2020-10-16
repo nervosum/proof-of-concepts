@@ -56,8 +56,3 @@ def predict(data: pd.DataFrame) -> pd.DataFrame:
 
 logger.info("LOAD MODEL")
 model = load_most_recent_model('../models')
-
-
-if __name__=="__main__":
-    df = pd.DataFrame(data={'sepal_length': [1.0], 'sepal_width':[2.0], 'petal_length':[3.0],'petal_width':[4.0]})
-    print(predict(df))
