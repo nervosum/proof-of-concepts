@@ -55,8 +55,8 @@ def predict(data: pd.DataFrame) -> pd.DataFrame:
     Returns:
         pd.DataFrame: Output dataframe
     """
-    return pd.DataFrame(data={"prediction": model.predict(data)})
+    return pd.DataFrame(data={"prediction": trained_model.predict(data)})
 
 
 model_path = os.path.join(os.path.dirname(__file__), "../models")
-model, schema, metadata = load_most_recent_model(model_path)
+trained_model, model_schema, _metadata = load_most_recent_model(model_path)

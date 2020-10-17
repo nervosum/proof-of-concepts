@@ -2,7 +2,7 @@ import os
 import logging
 import pandas as pd
 from flask import Flask, request
-from model.model import load_most_recent_model
+from model.model import trained_model, model_schema, _metadata
 
 
 logger = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ def predict():
     try:
         input = request.json
         data = pd.DataFrame(input, index=[0])
-        return {"classification": str(model.predict(data)[0])}
+        return {"classification": str(trained_model.predict(data)[0])}
     except Exception as err:
         return {"error": err}
 
@@ -34,7 +34,7 @@ def schema():
     Returns:
         The schema for the predict method
     """
-    return _schema
+    return model_schema
 
 
 @app.route("/metadata", methods=["GET"])
@@ -49,6 +49,4 @@ def metadata():
 
 
 if __name__ == "__main__":
-    model_path = os.path.join(os.path.dirname(__file__), "../models")
-    model, _schema, _metadata = load_most_recent_model(model_path)
     app.run(debug=True)
