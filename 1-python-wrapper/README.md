@@ -59,3 +59,18 @@ pre-commit run --all-files
 ```
 
 The setttings for the pre-commit hooks of flake8 and mypy can be found within `tox.ini`.
+
+## Calling the API's
+
+```bash
+$ curl --header "Content-Type: application/json" \
+  --request POST \
+  --data '{"sepal_length": 1.2,"sepal_width": 3.4,"petal_length": 3.4,"petal_width": 5.9}' \
+  http://localhost:5000/predict
+{
+  "classification": "2"
+}
+
+```
+  
+  
