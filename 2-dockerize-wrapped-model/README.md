@@ -4,7 +4,7 @@
 Model directory with trained models
 
 ## Build the docker
-docker build --tag=modelwrapper .  
+docker build --tag=modelwrapper .
 
-## Execute the docker 
+## Execute the docker
 docker run  -p 5000:5000 -v <path-to-model-dir>:/trained_models:ro distrotest

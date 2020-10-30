@@ -4,7 +4,7 @@ import json
 import joblib
 import pandas as pd
 from sklearn.pipeline import Pipeline
-from typing import Tuple, Dict, Any
+from typing import Dict, Any
 
 logger = logging.getLogger(__name__)
 
@@ -39,9 +39,10 @@ def load_model(model_path: str) -> Dict[str, Any]:
         logger.info("Load model")
 
         return {
-            'model': joblib.load(os.path.join(model_path, "model.joblib")),
-            'schema': load_json(os.path.join(model_path, "schema.json")),
-            'metadata':load_json(os.path.join(model_path, "metadata.json"))}
+            "model": joblib.load(os.path.join(model_path, "model.joblib")),
+            "schema": load_json(os.path.join(model_path, "schema.json")),
+            "metadata": load_json(os.path.join(model_path, "metadata.json")),
+        }
 
     except Exception as e:
         logger.error(e)
