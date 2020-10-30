@@ -1,4 +1,4 @@
-FROM python:3.7-stretch AS builder
+FROM python:3.7-slim AS builder
 
 COPY ./app /app/
 RUN pip install -r /app/requirements.txt
