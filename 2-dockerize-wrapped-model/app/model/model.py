@@ -9,7 +9,7 @@ from typing import Dict, Any
 logger = logging.getLogger(__name__)
 
 
-def load_json(filepath):
+def load_json(filepath: str) -> Dict[Any, Any]:
     """
     Wrapper around json.load
 
@@ -51,7 +51,7 @@ def load_model(model_path: str) -> Dict[str, Any]:
 
 
 def load_models(model_dir: str) -> Dict[str, Dict[str, Any]]:
-    """load models from file. If it does not yet exist, train a model
+    """load models from dir.
 
         Args:
             model_dir (str): Directory where models are stored.
