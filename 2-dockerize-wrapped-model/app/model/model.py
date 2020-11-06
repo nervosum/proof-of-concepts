@@ -77,6 +77,8 @@ def predict(model: Pipeline, data: pd.DataFrame) -> pd.DataFrame:
     Returns:
         pd.DataFrame: Output dataframe
     """
+
+    # TODO: Validation of data with metadata
     return pd.DataFrame(data={"prediction": model.predict(data)})
 
 
