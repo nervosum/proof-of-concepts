@@ -1,17 +1,22 @@
+# First build step
 FROM python:3.7-slim AS builder
 
-# Install python libraries in first image
-COPY ./app/ /app/
+# Install python libraries
+COPY ./app/requirements.txt /
 RUN mkdir /install
-RUN pip install --target=/install -r /app/requirements.txt
+RUN pip install --target=/install -r /requirements.txt
 
-# Move app and installed libraries to main image
+# Second build step
 FROM gcr.io/distroless/python3-debian10
-COPY --from=builder ./app /app/
+
+# Copy app and installed libraries to main image
+COPY ./app /app
 COPY --from=builder /install /install
 
+# Copy model files
+COPY models /trained_models
+
 ENV PYTHONPATH=/install:/app
-WORKDIR /app
 EXPOSE 5000
-VOLUME ["/trained_models"]
+WORKDIR /app
 CMD ["./wrapper/main.py"]

@@ -5,7 +5,7 @@ Model directory with trained models.
 
 To generate a trained some IRIS models you can run the following command multiple times. <br>
 
-`python 1-python-wrapper/training/train.py <path-to-model-dir>`
+`python ../1-python-wrapper/training/train.py ./models`
 
 ## Build the docker
 `docker build --tag=modelwrapper .`
