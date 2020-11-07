@@ -15,8 +15,8 @@ predict: { "sepal_length": 0, "sepal_width" :1, "petal_length": 2, "petal_width"
 Install the package in your environment using:
 
 ``` bash
-# Install package with all dependencies
-pip install -e .
+# Install all package dependencies
+pip install -r requirements.txt
 # Start flask app.
 python wrapper/main.py
 ```
@@ -72,5 +72,3 @@ $ curl --header "Content-Type: application/json" \
 }
 
 ```
-  
-  

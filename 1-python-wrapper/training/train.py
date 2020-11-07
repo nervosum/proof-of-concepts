@@ -11,6 +11,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.pipeline import Pipeline
 import json
+import argparse
 
 logger = logging.getLogger(__name__)
 
@@ -114,4 +115,9 @@ def train(model_dir: str) -> Pipeline:
 
 
 if __name__ == "__main__":
-    train(model_dir="./models")
+    parser = argparse.ArgumentParser(
+        description="Train a model", add_help=True
+    )
+    parser.add_argument("output_dir", metavar="output directory", type=str)
+    args = parser.parse_args()
+    train(model_dir=args.output_dir)
