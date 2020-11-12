@@ -11,7 +11,7 @@ To generate a trained some IRIS models you can run the following command multipl
 `docker build --tag=modelwrapper .`
 
 ## Execute the docker
-`docker run  -p 5000:5000 -v <path-to-model-dir>:/trained_models:ro modelwrapper`
+`docker run  -p 5000:5000 modelwrapper`
 
 
 

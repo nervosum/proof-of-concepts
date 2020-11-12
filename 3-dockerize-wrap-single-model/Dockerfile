@@ -14,7 +14,7 @@ COPY ./app /app
 COPY --from=builder /install /install
 
 # Copy model files
-COPY models /trained_model
+COPY ./model /trained_model
 
 ENV PYTHONPATH=/install:/app
 EXPOSE 5000
