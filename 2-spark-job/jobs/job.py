@@ -3,6 +3,7 @@ import os
 import logging
 import json
 import joblib
+import sys
 
 from sklearn.pipeline import Pipeline
 from typing import Tuple, Dict, Any
@@ -13,6 +14,9 @@ import pyspark.sql.functions as F
 from pyspark.sql.types import DoubleType
 
 logger = logging.getLogger(__name__)
+
+
+logger.warning(sys.version)
 
 
 def load_json(filepath: str) -> Dict[Any, Any]:
@@ -51,9 +55,7 @@ def load_most_recent_model(
 
 
 if __name__ == "__main__":
-
     # get arguments
-
     parser = argparse.ArgumentParser()
     parser.add_argument("--source_path", help="CSV source path")
     parser.add_argument("--output_path", help="CSV output path")
@@ -61,29 +63,35 @@ if __name__ == "__main__":
 
     if args.source_path and args.output_path:
 
-        # start Spark session
-
         conf = SparkConf().setAppName("Nervosum-Job")
 
         sc = SparkContext(conf=conf)
+        sc.addPyFile("/dependencies/dependencies_level1.zip")
+        # sc.addPyFile('local://opt/workspace/Guido.zip')
+        # sc.addPyFile('local://opt/workspace/dependencies.zip')
+
         spark = SparkSession(sc)
 
         # load data - both don't work.....
-
         spark_df = spark.read.option("header", True).csv(args.source_path)
 
         # load model
-
         model_path = "/models"
 
         model, model_schema, _metadata = load_most_recent_model(model_path)
 
-        # define UDF
-        type(model.predict)
-
+        # doesn't work!
         @F.udf(returnType=DoubleType())
         def predict_udf(*cols):
-            return float(model.predict((cols,)))
+            return model.predict(cols)
+
+        # # does work!
+        # def cool_function():
+        #     return '1'
+        #
+        # @F.udf(returnType=StringType())
+        # def predict_udf(*cols):
+        #     return cool_function()
 
         # predict
         predictions = spark_df.select(

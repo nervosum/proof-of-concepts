@@ -15,7 +15,10 @@ services:
     environment:
     - "SPARK_MASTER=spark://spark-master:7077"
   spark-master:
-    image: gtournois/nervosum-spark-master:firsttry
+#    image: gtournois/nervosum-spark-master:firsttry
+    build:
+      dockerfile: Dockerfile_master
+      context: .
     container_name: spark-master
     ports:
       - "8080:8080"
@@ -26,7 +29,10 @@ services:
     volumes:                                        # mount the following local folders
       - shared-workspace:/opt/workspace
   spark-worker-1:
-    image: gtournois/nervosum-spark-worker:firsttry
+    build:
+      dockerfile: Dockerfile_worker
+      context: .
+#    image: gtournois/nervosum-spark-worker:firsttry
     container_name: spark-worker-1
     depends_on:
       - spark-master
