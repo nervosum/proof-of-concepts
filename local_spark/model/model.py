@@ -41,21 +41,8 @@ def load_most_recent_model(model_dir: str,):
         raise e
 
 
-# def predict(data: pd.DataFrame) -> pd.DataFrame:
-#     """Predict iris flower type
-#
-#     Args:
-#         data (pd.DataFrame): Input dataframe
-#
-#     Returns:
-#         pd.DataFrame: Output dataframe
-#     """
-#     return pd.DataFrame(data={"prediction": trained_model.predict(data)})
-
-
 def predict(x):
     model, model_schema, _metadata = load_most_recent_model(
-        "/Users/guidotournois/Projects/nervosum/"
-        "proof-of-concepts/local_spark/model/models"
+        os.environ["PWD"] + "/model/models"
     )
     return model.predict(x)

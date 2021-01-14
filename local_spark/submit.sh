@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 export PYTHONPATH=$PYTHONPATH:$PWD/model
-export PYSPARK_PYTHON=/Users/guidotournois/miniconda3/envs/nervosum_job/bin/python
-export PYSPARK_DRIVER_PYTHON=/Users/guidotournois/miniconda3/envs/nervosum_job/bin/python
 
 spark-submit  --master local[*] \
---py-files /Users/guidotournois/Projects/nervosum/proof-of-concepts/6-local-spark/model_dependencies.zip \
+--py-files $PWD/model_dependencies.zip \
 wrapper/main.py --source_path data/input.csv --output_path data/output.csv
 
-
+#export PYSPARK_PYTHON=/Users/guidotournois/miniconda3/envs/nervosum_job/bin/python
+#export PYSPARK_DRIVER_PYTHON=/Users/guidotournois/miniconda3/envs/nervosum_job/bin/python
 #export HADOOP_CONF_DIR=$PWD/config
 #spark-submit  --master yarn \
 #--deploy-mode client \

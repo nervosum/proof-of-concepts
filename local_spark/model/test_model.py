@@ -1,5 +1,5 @@
-from model.model import predict
+from .model import predict
 
 
 def test_predict():
-    print(predict([[1, 2, 3, 4]]))
+    assert predict([[1, 2, 3, 4]])[0] == 2

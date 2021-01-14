@@ -1,1 +1,1 @@
-from model.model import predict  # noqa: F401
+from .model import predict  # noqa: F401
