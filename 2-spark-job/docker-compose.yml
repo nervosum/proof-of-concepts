@@ -1,0 +1,44 @@
+version: '2'
+volumes:
+  shared-workspace:
+    external: true
+services:
+  spark-job-2:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    depends_on:
+    - spark-master
+    - spark-worker-1
+    volumes:
+    - shared-workspace:/opt/workspace
+    environment:
+    - "SPARK_MASTER=spark://spark-master:7077"
+  spark-master:
+#    image: gtournois/nervosum-spark-master:firsttry
+    build:
+      dockerfile: Dockerfile_master
+      context: .
+    container_name: spark-master
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+    environment:
+      - INIT_DAEMON_STEP=setup_spark
+      - "SPARK_MASTER=spark://spark-master:7077"
+    volumes:                                        # mount the following local folders
+      - shared-workspace:/opt/workspace
+  spark-worker-1:
+    build:
+      dockerfile: Dockerfile_worker
+      context: .
+#    image: gtournois/nervosum-spark-worker:firsttry
+    container_name: spark-worker-1
+    depends_on:
+      - spark-master
+    ports:
+      - "8081:8081"
+    environment:
+      - "SPARK_MASTER=spark://spark-master:7077"
+    volumes:                                        # mount the following local folders
+      - shared-workspace:/opt/workspace
