@@ -1,0 +1,47 @@
+import argparse
+import logging
+
+from pyspark.context import SparkContext, SparkConf
+from pyspark.sql.session import SparkSession
+import pyspark.sql.functions as F
+from pyspark.sql.types import DoubleType
+
+from model import predict
+
+logger = logging.getLogger(__name__)
+
+
+if __name__ == "__main__":
+    # get arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--source_path", help="CSV source path")
+    parser.add_argument("--output_path", help="CSV output path")
+    args = parser.parse_args()
+
+    if args.source_path and args.output_path:
+
+        conf = SparkConf().setAppName("Nervosum-Job")
+
+        sc = SparkContext(conf=conf)
+        # sc.addPyFile("model_dependencies.zip")
+        spark = SparkSession(sc)
+
+        # load data
+        spark_df = spark.read.option("header", True).csv(args.source_path)
+
+        @F.udf(returnType=DoubleType())
+        def predict_udf(*cols):
+            return predict(cols)
+
+        # predict
+        predictions = spark_df.select(
+            predict_udf(*spark_df.schema.names).alias("predictions")
+        )
+
+        predictions.write.mode("overwrite").format("csv").save("data/output")
+
+    else:
+        logger.info(
+            "Not all arguments were given."
+            " Please specify source and output path"
+        )
