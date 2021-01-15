@@ -2,8 +2,9 @@
 export PYTHONPATH=$PYTHONPATH:$PWD/model
 
 spark-submit  --master local[*] \
---py-files $PWD/model_dependencies.zip \
 wrapper/main.py --source_path data/input.csv --output_path data/output.csv
+
+#--py-files $PWD/model_dependencies.zip \
 
 #export PYSPARK_PYTHON=/Users/guidotournois/miniconda3/envs/nervosum_job/bin/python
 #export PYSPARK_DRIVER_PYTHON=/Users/guidotournois/miniconda3/envs/nervosum_job/bin/python

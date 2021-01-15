@@ -4,7 +4,7 @@ import logging
 from pyspark.context import SparkContext, SparkConf
 from pyspark.sql.session import SparkSession
 import pyspark.sql.functions as F
-from pyspark.sql.types import DoubleType
+from pyspark.sql.types import IntegerType
 
 from model import predict
 
@@ -29,13 +29,13 @@ if __name__ == "__main__":
         # load data
         spark_df = spark.read.option("header", True).csv(args.source_path)
 
-        @F.udf(returnType=DoubleType())
+        @F.udf(returnType=IntegerType())
         def predict_udf(*cols):
-            return predict(cols)
+            return int(predict([[*cols]])[0])
 
         # predict
         predictions = spark_df.select(
-            predict_udf(*spark_df.schema.names).alias("predictions")
+            predict_udf(*spark_df.columns).alias("predictions")
         )
 
         predictions.write.mode("overwrite").format("csv").save("data/output")
