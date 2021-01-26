@@ -6,10 +6,10 @@ from pyspark.sql.session import SparkSession
 import pyspark.sql.functions as F
 from pyspark.sql.types import IntegerType
 
+from pydzipimport import install
 from model import predict
 
 logger = logging.getLogger(__name__)
-
 
 if __name__ == "__main__":
     # get arguments
@@ -17,13 +17,13 @@ if __name__ == "__main__":
     parser.add_argument("--source_path", help="CSV source path")
     parser.add_argument("--output_path", help="CSV output path")
     args = parser.parse_args()
-
+    install()
     if args.source_path and args.output_path:
+        # sys.path.insert(0, 'model_dependencies.zip')
 
         conf = SparkConf().setAppName("Nervosum-Job")
 
         sc = SparkContext(conf=conf)
-        # sc.addPyFile("model_dependencies.zip")
         spark = SparkSession(sc)
 
         # load data
@@ -31,6 +31,10 @@ if __name__ == "__main__":
 
         @F.udf(returnType=IntegerType())
         def predict_udf(*cols):
+            try:
+                install()
+            except Exception:
+                pass
             return int(predict([[*cols]])[0])
 
         # predict
