@@ -24,8 +24,16 @@ import tempfile
 import warnings
 import zipimport
 import pathlib
+import glob
 
 from importlib.machinery import EXTENSION_SUFFIXES
+
+import logging
+
+logger = logging.getLogger()
+logger.setLevel("INFO")
+if logger.handlers == []:
+    logger.addHandler(logging.StreamHandler())
 
 __all__ = [
     "PydZipImporter",
@@ -33,6 +41,9 @@ __all__ = [
     "install",
     "uninstall",
 ]
+
+
+tmp_library_folder = tempfile.TemporaryDirectory()
 
 
 def _call_with_frames_removed(f, *args, **kwds):
@@ -90,42 +101,58 @@ class PydZipImporter(zipimport.zipimporter):
         package.
         """
         info = self._get_extension_module_info(fullname)
+
         if info:
             suffix, fullpath = info
             fakepath = self.archive + os.sep + fullpath
 
             data = self.get_data(fullpath)
-
             if ".so" in suffix:
                 extra_libs = []
                 module_name = fullpath.split("/")[0]
-                # dylib_dr = os.path.join(module_name, ".dylibs/")
-                dylib_dr = module_name + ".libs/"
-                print(dylib_dr)
+                if module_name == "sklearn":
+                    dylib_dr = "scikit_learn.libs"
+                else:
+                    dylib_dr = module_name + ".libs/"
                 dylib_files = [
                     x
                     for x in self._files.keys()
                     if (dylib_dr in x) and ".so" in str(x)
                 ]
-                print(dylib_files)
-                # if (dylib_dr in x) and str(x).endswith(".dylib")
-                if len(dylib_files):
-                    for lib in dylib_files:
-                        lib_path = lib
-                        lib_data = self.get_data(lib_path)
-                        extra_libs.append((lib_path, lib_data))
 
-                    return (
-                        TemporaryExtensionFolderLoader(
-                            fullname,
-                            fakepath,
-                            so_path=fullpath,
-                            so_content=data,
-                            module_name=module_name,
-                            extra_libs=extra_libs,
-                        ),
-                        [],
+                # if (dylib_dr in x) and str(x).endswith(".dylib")
+                for lib_path in dylib_files:
+                    new_lib_path = os.path.join(
+                        tmp_library_folder.name, lib_path
                     )
+
+                    if len(glob.glob(new_lib_path, recursive=True)) == 0:
+                        # create parent paths
+                        parent_dir = os.path.join(
+                            tmp_library_folder.name, *lib_path.split("/")[:-1]
+                        )
+                        pathlib.Path(parent_dir).mkdir(
+                            parents=True, exist_ok=True
+                        )
+                        lib_data = self.get_data(lib_path)
+
+                        with open(new_lib_path, "wb") as f:
+                            f.write(lib_data)
+                            f.flush()
+
+                    extra_libs.append([lib_path, new_lib_path])
+
+                return (
+                    TemporaryExtensionFolderLoader(
+                        fullname,
+                        fakepath,
+                        so_path=fullpath,
+                        so_content=data,
+                        module_name=module_name,
+                        extra_libs=extra_libs,
+                    ),
+                    [],
+                )
 
             ext = suffix
             if ext.startswith(os.sep + "__init__"):
@@ -139,90 +166,6 @@ class PydZipImporter(zipimport.zipimporter):
             )
 
         return super().find_loader(fullname, path)
-
-
-class TemporaryExtensionFolderLoader:
-    """An extension file loader which takes a (fake) path and bytearray
-    of data. The shared object (given in data) is written to a named
-    temporary file before being loaded.
-    Based upon `importlib.machinery.ExtensionFileLoader`.
-    """
-
-    def __init__(
-        self, name, path, so_path, so_content, module_name, extra_libs
-    ):
-        self.folder = tempfile.TemporaryDirectory()
-
-        pathlib.Path(
-            os.path.join(self.folder.name, *so_path.split("/")[:-1])
-        ).mkdir(parents=True, exist_ok=True)
-
-        with open(os.path.join(self.folder.name, so_path), "wb") as f:
-            f.write(so_content)
-            f.flush()
-
-        for lib in extra_libs:
-            pathlib.Path(
-                os.path.join(self.folder.name, *lib[0].split("/")[:-1])
-            ).mkdir(parents=True, exist_ok=True)
-
-            with open(os.path.join(self.folder.name, lib[0]), "wb") as f:
-                f.write(lib[1])
-                f.flush()
-
-        self.data = open(os.path.join(self.folder.name, so_path), "rb")
-        self.path = path
-        self.name = name
-
-    def load_module(self, fullname):
-        """Load an extension module."""
-        # @_check_name
-        if fullname is None:
-            fullname = self.name
-        elif fullname != self.name:
-            raise ImportError(
-                "loader cannot handle %s" % self.name, name=self.name
-            )
-
-        is_reload = fullname in sys.modules
-        try:
-            module = _call_with_frames_removed(
-                imp.load_dynamic, fullname, self.data.name
-            )
-            module.__file__ = self.path  # Set this to our fake path!
-            if self.is_package(fullname) and not hasattr(module, "__path__"):
-                module.__path__ = [os.path.split(self.path)[0]]
-
-            # @set_loader
-            if not hasattr(module, "__loader__"):
-                module.__loader__ = self
-
-            # @set_package
-            if getattr(module, "__package__", None) is None:
-                module.__package__ = module.__name__
-                if not hasattr(module, "__path__"):
-                    module.__package__ = module.__package__.rpartition(".")[0]
-
-            return module
-        except Exception:
-            if not is_reload and fullname in sys.modules:
-                del sys.modules[fullname]
-            raise
-
-    def is_package(self, fullname):
-        """Return True if the extension module is a package."""
-        file_name = os.path.split(self.path)[1]
-        return any(
-            file_name == "__init__" + suffix for suffix in EXTENSION_SUFFIXES
-        )
-
-    def get_code(self, fullname):
-        """Return None as an extension module cannot create a code object."""
-        return None
-
-    def get_source(self, fullname):
-        """Return None as extension modules have no source code."""
-        return None
 
 
 class TemporaryExtensionFileLoader:
@@ -288,6 +231,38 @@ class TemporaryExtensionFileLoader:
     def get_source(self, fullname):
         """Return None as extension modules have no source code."""
         return None
+
+
+class TemporaryExtensionFolderLoader(TemporaryExtensionFileLoader):
+    """An extension folder loader which takes a (fake) path and bytearray
+    of data. The shared object (given in data) is written to a named
+    temporary file before being loaded.
+    Based upon `importlib.machinery.ExtensionFileLoader`.
+    """
+
+    def __init__(
+        self, name, path, so_path, so_content, module_name, extra_libs
+    ):
+        self.folder = tempfile.TemporaryDirectory()
+
+        pathlib.Path(
+            os.path.join(self.folder.name, *so_path.split("/")[:-1])
+        ).mkdir(parents=True, exist_ok=True)
+
+        with open(os.path.join(self.folder.name, so_path), "wb") as f:
+            f.write(so_content)
+            f.flush()
+
+        for lib in extra_libs:
+            pathlib.Path(
+                os.path.join(self.folder.name, *lib[0].split("/")[:-1])
+            ).mkdir(parents=True, exist_ok=True)
+
+            os.symlink(lib[1], os.path.join(self.folder.name, lib[0]))
+
+        self.data = open(os.path.join(self.folder.name, so_path), "rb")
+        self.path = path
+        self.name = name
 
 
 def install():

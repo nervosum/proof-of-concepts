@@ -6,7 +6,7 @@ from pyspark.sql.session import SparkSession
 import pyspark.sql.functions as F
 from pyspark.sql.types import IntegerType
 
-from pydzipimport import install
+from pydzipimport_linux import install
 from model import predict
 
 logger = logging.getLogger(__name__)
@@ -19,7 +19,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
     install()
     if args.source_path and args.output_path:
-        # sys.path.insert(0, 'model_dependencies.zip')
 
         conf = SparkConf().setAppName("Nervosum-Job")
 
