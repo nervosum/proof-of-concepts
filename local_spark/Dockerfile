@@ -20,13 +20,11 @@ RUN mkdir /app/wrapper
 
 COPY ./model/requirements.txt /app/model/requirements.txt
 COPY ./wrapper/requirements-wrapper.txt /app/wrapper/requirements-wrapper.txt
+COPY ./build.sh /app/build.sh
 
 WORKDIR /app
 
-RUN pip3 install -r wrapper/requirements-wrapper.txt
-
-RUN pip3 install -r model/requirements.txt -t ./model_dependencies && \
-    cd model_dependencies && zip -r ../model_dependencies.zip .
+RUN sh ./build.sh
 
 ENV PATH=/usr/local/lib/python3.8/dist-packages/pyspark/bin/:/usr/local/lib/python3.8/:$PATH
 ENV PYSPARK_PYTHON=python3
@@ -38,9 +36,7 @@ COPY . /app
 EXPOSE 8888
 
 RUN ls ./data
-
 RUN sh ./submit.sh
-
 RUN ls ./data/output
 
 CMD ["bash"]

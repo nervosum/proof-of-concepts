@@ -41,8 +41,11 @@ def load_most_recent_model(model_dir: str,):
         raise e
 
 
-def predict(x):
-    model, model_schema, _metadata = load_most_recent_model(
-        os.environ["PWD"] + "/model/models"
-    )
-    return model.predict(x)
+class Model:
+    def __init__(self, model_dir):
+        self.model, _, _ = load_most_recent_model(
+            os.environ["PWD"] + model_dir
+        )
+
+    def predict(self, x):
+        return self.model.predict(x)

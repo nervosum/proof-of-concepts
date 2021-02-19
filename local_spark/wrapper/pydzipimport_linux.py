@@ -148,7 +148,6 @@ class PydZipImporter(zipimport.zipimporter):
                         fakepath,
                         so_path=fullpath,
                         so_content=data,
-                        module_name=module_name,
                         extra_libs=extra_libs,
                     ),
                     [],
@@ -236,13 +235,12 @@ class TemporaryExtensionFileLoader:
 class TemporaryExtensionFolderLoader(TemporaryExtensionFileLoader):
     """An extension folder loader which takes a (fake) path and bytearray
     of data. The shared object (given in data) is written to a named
-    temporary file before being loaded.
+    temporary file before being loaded. Moreover, potential compiled libraries
+    are added to the temporary folder structure.
     Based upon `importlib.machinery.ExtensionFileLoader`.
     """
 
-    def __init__(
-        self, name, path, so_path, so_content, module_name, extra_libs
-    ):
+    def __init__(self, name, path, so_path, so_content, extra_libs):
         self.folder = tempfile.TemporaryDirectory()
 
         pathlib.Path(
@@ -267,13 +265,15 @@ class TemporaryExtensionFolderLoader(TemporaryExtensionFileLoader):
 
 def install():
     """Replace the zipimport.zipimporter path hook with PydZipImporter."""
-    idx = sys.path_hooks.index(zipimport.zipimporter)
-    sys.path_hooks[idx] = PydZipImporter
-    sys.path_importer_cache.clear()
+    if PydZipImporter not in sys.path_hooks:
+        idx = sys.path_hooks.index(zipimport.zipimporter)
+        sys.path_hooks[idx] = PydZipImporter
+        sys.path_importer_cache.clear()
 
 
 def uninstall():
     """Restore the original zipimport.zipimporter path hook."""
-    idx = sys.path_hooks.index(PydZipImporter)
-    sys.path_hooks[idx] = zipimport.zipimporter
-    sys.path_importer_cache.clear()
+    if PydZipImporter in sys.path_hooks:
+        idx = sys.path_hooks.index(PydZipImporter)
+        sys.path_hooks[idx] = zipimport.zipimporter
+        sys.path_importer_cache.clear()
